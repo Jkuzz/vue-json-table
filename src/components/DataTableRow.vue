@@ -8,10 +8,21 @@ defineProps<{
   row: Row
 }>()
 
+const emit = defineEmits<{
+  /**
+   * This row was marked to be deleted.
+   */
+  (e: 'delete', id: string): void
+}>()
+
 const subtableExpanded = ref(false)
 
 const handleRowExpand = () => {
   subtableExpanded.value = !subtableExpanded.value
+}
+
+const handleDelete = (rowToDelete: Row) => {
+  emit('delete', rowToDelete.id)
 }
 </script>
 
@@ -32,7 +43,7 @@ const handleRowExpand = () => {
     <td class="flex items-center justify-center">
       <button
         class="font-bold p-2 text-red-600 hover:font-extrabold text-lg"
-        v-on:click="() => {}"
+        v-on:click="() => handleDelete(row)"
       >
         X
       </button>

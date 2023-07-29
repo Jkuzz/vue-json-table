@@ -1,9 +1,23 @@
 <script setup lang="ts">
+import {ref, computed} from 'vue'
 import DataTableRow from './DataTableRow.vue'
 
-defineProps<{
+const props = defineProps<{
   rows: { children?: any; data: any; id: string }[]
 }>()
+
+/**
+ * Filtered data rows. Filtered as computed to not mutate props.
+ */
+const filteredRows = computed(() =>
+  props.rows.filter((row) => !rowsFilterIds.value.includes(row.id))
+)
+const rowsFilterIds = ref<string[]>([])
+
+const handleDeleteRow = (rowId: string) => {
+  rowsFilterIds.value.push(rowId)
+}
+
 </script>
 
 <template>
@@ -21,9 +35,10 @@ defineProps<{
     </thead>
     <tbody>
       <DataTableRow
-        v-for="row in rows"
+        v-for="row in filteredRows"
         :key="row.id"
         :row="row"
+        @delete="handleDeleteRow"
       />
     </tbody>
   </table>

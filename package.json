@@ -12,6 +12,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "uuidv4": "^6.2.13",
     "vue": "^3.3.4"
   },
   "devDependencies": {
