@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import DataTable from './DataTable.vue'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 type Row = { children?: any; data: any; id: string }
 
-defineProps<{
+const props = defineProps<{
   row: Row
 }>()
 
@@ -17,12 +17,38 @@ const emit = defineEmits<{
 
 const subtableExpanded = ref(false)
 
+/**
+ * Initialised with prop subtable keys.
+ * Subtable is marked as true if it is empty.
+ */
+const emptySubtables = ref(
+  Object.fromEntries(
+    Object.keys(props.row.children).map((key) => [
+      key,
+      Object.keys(props.row.children[key]).length === 0
+    ])
+  )
+)
+
+/**
+ * Cannot be computed, as the rows are filtered internally within the child table component.
+ */
+const allSubtablesEmpty = computed(
+  () =>
+    Object.keys(emptySubtables.value).length === 0 ||
+    !Object.values(emptySubtables.value).includes(false)
+)
+
 const handleRowExpand = () => {
   subtableExpanded.value = !subtableExpanded.value
 }
 
 const handleDelete = (rowToDelete: Row) => {
   emit('delete', rowToDelete.id)
+}
+
+const handleSubtableEmptied = (subtable: string) => {
+  emptySubtables.value[subtable] = true
 }
 </script>
 
@@ -32,6 +58,7 @@ const handleDelete = (rowToDelete: Row) => {
     <td class="p-1 text-center">
       <button
         class="font-bold p-2 hover:font-extrabold text-lg"
+        v-if="!allSubtablesEmpty"
         v-on:click="handleRowExpand"
       >
         {{ subtableExpanded ? '▼' : '➤' }}
@@ -59,14 +86,16 @@ const handleDelete = (rowToDelete: Row) => {
       <div
         v-if="row.children"
         class="flex flex-col p-4 w-full gap-4"
-        :class="{ hidden: !subtableExpanded }"
+        :class="{ hidden: !subtableExpanded || allSubtablesEmpty }"
       >
         <div
           v-for="(rowChild, childKey) in row.children"
           :key="childKey"
           :rows="rowChild"
+          :class="{ hidden: emptySubtables[childKey] }"
         >
           <DataTable
+            @emptied="() => handleSubtableEmptied(childKey.toString())"
             v-if="rowChild.records"
             :rows="rowChild.records"
           />

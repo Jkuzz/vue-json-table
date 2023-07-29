@@ -6,6 +6,13 @@ const props = defineProps<{
   rows: { children?: any; data: any; id: string }[]
 }>()
 
+const emit = defineEmits<{
+  /**
+   * All of this table's rows were deleted.
+   */
+  (e: 'emptied'): void
+}>()
+
 /**
  * Filtered data rows. Filtered as computed to not mutate props.
  */
@@ -16,8 +23,10 @@ const rowsFilterIds = ref<string[]>([])
 
 const handleDeleteRow = (rowId: string) => {
   rowsFilterIds.value.push(rowId)
+  if (filteredRows.value.length <= 0) {
+    emit('emptied')
+  }
 }
-
 </script>
 
 <template>
